@@ -1,0 +1,107 @@
+{
+	"name": "DF_movies_dbo_to_dim_part2",
+	"properties": {
+		"folder": {
+			"name": "archive"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_dbo_tOnlineService",
+						"type": "DatasetReference"
+					},
+					"name": "tOnlineService"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_DM_DimOnlineService",
+						"type": "DatasetReference"
+					},
+					"name": "DimOnlineService"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_DM_DimOnlineService",
+						"type": "DatasetReference"
+					},
+					"name": "loadDimOnlineService"
+				}
+			],
+			"transformations": [
+				{
+					"name": "notExistsService"
+				},
+				{
+					"name": "lookup1"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "alterRow1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          ServiceKey as integer,",
+				"          ServiceCode as string,",
+				"          ServiceName as string,",
+				"          CreatedDate as timestamp,",
+				"          ModifiedDate as timestamp",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> tOnlineService",
+				"source(output(",
+				"          ServiceKey as integer,",
+				"          ServiceCode as string,",
+				"          ServiceName as string,",
+				"          CreatedDate as timestamp,",
+				"          ModifiedDate as timestamp",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> DimOnlineService",
+				"tOnlineService, DimOnlineService exists(tOnlineService@ServiceName  == DimOnlineService@ServiceName,",
+				"     negate:true,",
+				"     broadcast: 'auto')~> notExistsService",
+				"notExistsService, DimOnlineService lookup(tOnlineService@ServiceCode == DimOnlineService@ServiceCode,",
+				"     multiple: true,",
+				"     broadcast: 'auto')~> lookup1",
+				"lookup1 derive(insert_ts = iif(isNull(DimOnlineService@CreatedDate), currentTimestamp(), DimOnlineService@CreatedDate),",
+				"          update_ts = currentTimestamp()) ~> derivedColumn1",
+				"derivedColumn1 alterRow(upsertIf(true())) ~> alterRow1",
+				"alterRow1 sink(allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     input(",
+				"          ServiceKey as integer,",
+				"          ServiceCode as string,",
+				"          ServiceName as string,",
+				"          CreatedDate as timestamp,",
+				"          ModifiedDate as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:false,",
+				"     upsertable:true,",
+				"     keys:['ServiceCode'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          ServiceCode = tOnlineService@ServiceCode,",
+				"          ServiceName = tOnlineService@ServiceName,",
+				"          CreatedDate = insert_ts,",
+				"          ModifiedDate = update_ts",
+				"     )) ~> loadDimOnlineService"
+			]
+		}
+	}
+}

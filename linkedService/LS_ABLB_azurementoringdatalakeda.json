@@ -1,0 +1,12 @@
+{
+	"name": "LS_ABLB_azurementoringdatalakeda",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobStorage",
+		"typeProperties": {
+			"serviceEndpoint": "https://azurementoringdatalakeda.blob.core.windows.net/",
+			"accountKind": "StorageV2"
+		}
+	}
+}

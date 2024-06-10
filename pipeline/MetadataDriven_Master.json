@@ -1,0 +1,106 @@
+{
+	"name": "MetadataDriven_Master",
+	"properties": {
+		"activities": [
+			{
+				"name": "Exec_MetadataDriven",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "MetadataDriven",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "SendEmail",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "GetURL",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"url": {
+						"value": "@activity('GetURL').output.value",
+						"type": "Expression"
+					},
+					"body": {
+						"runId": "@{pipeline().RunId}.",
+						"dataFactoryName": "@{pipeline().DataFactory}",
+						"pipelineName": "@{pipeline().Pipeline}",
+						"receiver": "@{pipeline().parameters.receiver}",
+						"pipelineStatus": "@{activity('Exec_MetadataDriven').status}",
+						"error": "@{activity('Exec_MetadataDriven').error}"
+					}
+				}
+			},
+			{
+				"name": "GetURL",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Exec_MetadataDriven",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"url": {
+						"value": "@concat(\n    pipeline().globalParameters.logicAppSendEmailUrl,\n    '?api-version=7.0'\n)",
+						"type": "Expression"
+					},
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"receiver": {
+				"type": "string",
+				"defaultValue": "dzmitry_akulich1@epam.com"
+			}
+		},
+		"variables": {
+			"tmp2": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "MetadataDriven"
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-06-08T16:20:47Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

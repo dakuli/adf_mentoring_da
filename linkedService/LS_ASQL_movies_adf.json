@@ -1,0 +1,20 @@
+{
+	"name": "LS_ASQL_movies_adf",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"description": "ADF user with limited privileges",
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"connectionString": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=azure-mentoring-da.database.windows.net;Initial Catalog=movies;User ID=adf",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "LS_AKV",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "secret-azuresqlserver-adf"
+			}
+		}
+	}
+}

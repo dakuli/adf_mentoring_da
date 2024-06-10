@@ -1,0 +1,50 @@
+{
+	"name": "DS_ASQL_dim_test2",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ASQL_DataMart_adf",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "tmp"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "fullname",
+				"type": "text"
+			},
+			{
+				"name": "country",
+				"type": "text"
+			},
+			{
+				"name": "insert_ts",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "update_ts",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "dw_hash",
+				"type": "text"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "test2"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

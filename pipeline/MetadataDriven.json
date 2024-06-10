@@ -1,0 +1,413 @@
+{
+	"name": "MetadataDriven",
+	"properties": {
+		"activities": [
+			{
+				"name": "ACT_GEN_LKP_GetMetadata",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Fail1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "select * from etl.tControlMetadata\nwhere CopyEnabled = 1;",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "DS_ASQL_etl_tControlMetadata",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ACT_ITRC_FOR_CopyRawToStg",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "ACT_GEN_LKP_GetMetadata",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('ACT_GEN_LKP_GetMetadata').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "ACT_MT_Copy",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "DelimitedTextSource",
+									"additionalColumns": [
+										{
+											"name": "pipelineId",
+											"value": {
+												"value": "@pipeline().RunId",
+												"type": "Expression"
+											}
+										},
+										{
+											"name": "source_filename",
+											"value": "$$FILENAME"
+										}
+									],
+									"storeSettings": {
+										"type": "AzureBlobStorageReadSettings",
+										"recursive": {
+											"value": "@json(item().CopySourceSettings).recursive",
+											"type": "Expression"
+										},
+										"wildcardFolderPath": {
+											"value": "@json(item().SourceObjectSettings).folderPath",
+											"type": "Expression"
+										},
+										"wildcardFileName": {
+											"value": "@json(item().CopySourceSettings).wildcardFileName",
+											"type": "Expression"
+										},
+										"enablePartitionDiscovery": {
+											"value": "@json(item().CopySourceSettings).enablePartitionDiscovery",
+											"type": "Expression"
+										}
+									},
+									"formatSettings": {
+										"type": "DelimitedTextReadSettings",
+										"skipLineCount": {
+											"value": "@json(item().CopySourceSettings).skipLineCount",
+											"type": "Expression"
+										}
+									}
+								},
+								"sink": {
+									"type": "AzureSqlSink",
+									"preCopyScript": {
+										"value": "@json(item().CopySinkSettings).preCopyScript",
+										"type": "Expression"
+									},
+									"writeBehavior": "insert",
+									"sqlWriterUseTableLock": false,
+									"disableMetricsCollection": false
+								},
+								"enableStaging": false,
+								"dataIntegrationUnits": {
+									"value": "@json(item().DataLoadingBehaviorSettings).DIUValue",
+									"type": "Expression"
+								},
+								"translator": {
+									"value": "@json(item().CopyActivitySettings).translator",
+									"type": "Expression"
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "DS_CSV_raw_metadatadriven",
+									"type": "DatasetReference",
+									"parameters": {
+										"columnDelimiter": "@json(item().SourceObjectSettings).columnDelimiter",
+										"escapeChar": "@json(item().SourceObjectSettings).escapeChar",
+										"quoteChar": "@json(item().SourceObjectSettings).quoteChar",
+										"firstRowAsHeader": "@json(item().SourceObjectSettings).firstRowAsHeader",
+										"container": "@json(item().SourceObjectSettings).container"
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DS_ASQL_dbo_MetadataDriven",
+									"type": "DatasetReference",
+									"parameters": {
+										"table": "@json(item().SinkObjectSettings).table",
+										"schema": "@json(item().SinkObjectSettings).schema"
+									}
+								}
+							]
+						},
+						{
+							"name": "ACT_GEN_SPRC_LogMain",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "ACT_MT_Copy",
+									"dependencyConditions": [
+										"Completed"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[dbo].[spPopulateLogs]",
+								"storedProcedureParameters": {
+									"PipelineName": {
+										"value": {
+											"value": "@pipeline().Pipeline",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"PipelineRunId": {
+										"value": {
+											"value": "@pipeline().RunId",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"ActivityName": {
+										"value": "Copy Activity",
+										"type": "String"
+									},
+									"BillingInfo": {
+										"value": {
+											"value": "@if(\n    equals(activity('ACT_MT_Copy').Status, 'Succeeded'),\n    concat(\n        '{\"billingReference\":',\n        activity('ACT_MT_Copy').output.billingReference,\n        '}'\n    ),\n    '-1'\n)",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"ExecutionStatistics": {
+										"value": {
+											"value": "@if(\n    equals(activity('ACT_MT_Copy').Status, 'Succeeded'),\n    concat(\n        '{\"filesRead\":\"',\n        activity('ACT_MT_Copy').output.filesRead,\n        '\",\"rowsRead\":\"',\n        activity('ACT_MT_Copy').output.rowsRead,\n        '\",\"rowsCopied\":\"',\n        activity('ACT_MT_Copy').output.rowsCopied,\n        '\",\"usedDataIntegrationUnits\":\"',\n        activity('ACT_MT_Copy').output.usedDataIntegrationUnits,\n        '\",\"usedParallelCopies\":\"',\n        activity('ACT_MT_Copy').output.usedParallelCopies,'\"}'\n    ),\n    '-1'\n)",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"ExecutionDetails": {
+										"value": {
+											"value": "@if(\n    equals(activity('ACT_MT_Copy').Status, 'Succeeded'),\n    concat(\n        '{\"executionStart\":\"',\n        activity('ACT_MT_Copy').output.executionDetails[0].start,\n        '\",\"executionStatus\":\"',\n        activity('ACT_MT_Copy').output.executionDetails[0].status,\n        '\",\"executionQueueDuration\":\"',\n        activity('ACT_MT_Copy').output.executionDetails[0].profile.queue.duration,\n        '\",\"executionTransferDuration\":\"',\n        activity('ACT_MT_Copy').output.executionDetails[0].profile.transfer.duration,\n        '\",\"copyDuration\":\"',\n        activity('ACT_MT_Copy').output.copyDuration,'\"}'\n    ),\n    '-1'\n)",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"ExecutioinStatus": {
+										"value": {
+											"value": "@if(\n    equals(activity('ACT_MT_Copy').Status, 'Succeeded'),\n    'Succeeded',\n    'Failed'\n)",
+											"type": "Expression"
+										},
+										"type": "String"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "LS_ASQL_movies",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "isSuccessed",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "ACT_GEN_SPRC_LogMain",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@equals(activity('ACT_MT_Copy').Status, 'Succeeded')",
+									"type": "Expression"
+								},
+								"ifFalseActivities": [
+									{
+										"name": "ACT_GEN_SPRC_LogFailure",
+										"type": "SqlServerStoredProcedure",
+										"dependsOn": [],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"storedProcedureName": "[dbo].[spPopulateLogsErrorDetails]",
+											"storedProcedureParameters": {
+												"ActivityName": {
+													"value": "Copy Activity",
+													"type": "String"
+												},
+												"ErrorCode": {
+													"value": {
+														"value": "@activity('ACT_MT_Copy').error.ErrorCode",
+														"type": "Expression"
+													},
+													"type": "String"
+												},
+												"ErrorMessage": {
+													"value": {
+														"value": "@activity('ACT_MT_Copy').error.Message",
+														"type": "Expression"
+													},
+													"type": "String"
+												},
+												"ErrorTimestamp": {
+													"value": {
+														"value": "@utcnow()",
+														"type": "Expression"
+													},
+													"type": "DateTime"
+												},
+												"FailureType": {
+													"value": {
+														"value": "@activity('ACT_MT_Copy').error.failureType",
+														"type": "Expression"
+													},
+													"type": "String"
+												},
+												"PipelineName": {
+													"value": {
+														"value": "@pipeline().Pipeline",
+														"type": "Expression"
+													},
+													"type": "String"
+												},
+												"PipelineRunId": {
+													"value": {
+														"value": "@pipeline().RunId",
+														"type": "Expression"
+													},
+													"type": "String"
+												}
+											}
+										},
+										"linkedServiceName": {
+											"referenceName": "LS_ASQL_movies",
+											"type": "LinkedServiceReference"
+										}
+									}
+								]
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "WriteLogToADLS",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "ACT_ITRC_FOR_CopyRawToStg",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "@concat(\n'select * from etl.tLogs where PipelineRunId = ''',\npipeline().RunId,\n''''\n)",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobStorageWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_ASQL_etl_tLogs",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_CSV_log",
+						"type": "DatasetReference",
+						"parameters": {
+							"folderPath": "metadata-driven",
+							"filename": {
+								"value": "@concat(\n    formatDateTime(utcnow(),'yyyyMMddhhmmss'),\n    '_',\n    pipeline().RunId,\n    '.txt')",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "Fail1",
+				"type": "Fail",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"message": "ThisIsACustomFailActitivy",
+					"errorCode": "404"
+				}
+			}
+		],
+		"folder": {
+			"name": "MetadataDriven"
+		},
+		"annotations": [
+			"MetadataDrivenSolution"
+		],
+		"lastPublishTime": "2024-06-08T17:07:34Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -1,0 +1,57 @@
+{
+	"name": "DS_ASQL_etl_tLogs",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ASQL_movies",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "Id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "PipelineName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "PipelineRunId",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ActivityName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "BillingInfo",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ExecutionStatistics",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ExecutionDetails",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ExecutioinStatus",
+				"type": "nvarchar"
+			},
+			{
+				"name": "LogTimestamp",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			}
+		],
+		"typeProperties": {
+			"schema": "etl",
+			"table": "tLogs"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

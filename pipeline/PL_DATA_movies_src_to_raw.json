@@ -1,0 +1,86 @@
+{
+	"name": "PL_DATA_movies_src_to_raw",
+	"properties": {
+		"activities": [
+			{
+				"name": "ACT_MT_Copy_FileIngestToRaw",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": false,
+							"wildcardFileName": "*",
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobStorageWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": {
+								"value": "@concat(\n    '_',\n    formatDateTime(utcnow(),'yyyyMMddhhmmss'),\n    '.csv'\n)",
+								"type": "Expression"
+							}
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_CSV_src_azurementoringstorageda_movies",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_CSV_raw_LF_azurementoringdatalakeda",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"variables": {
+			"filename": {
+				"type": "String"
+			},
+			"current_timestamp": {
+				"type": "String"
+			},
+			"ListOfFiles": {
+				"type": "Array"
+			},
+			"OutputFIleName": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-05-11T18:15:05Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

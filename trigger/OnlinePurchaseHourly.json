@@ -1,0 +1,25 @@
+{
+	"name": "OnlinePurchaseHourly",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Stopped",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "PL_master_pipeline_online",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Hour",
+				"interval": 1,
+				"startTime": "2024-05-12T22:32:00",
+				"endTime": "2024-05-14T22:32:00",
+				"timeZone": "Georgian Standard Time"
+			}
+		}
+	}
+}

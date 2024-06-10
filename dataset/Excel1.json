@@ -1,0 +1,24 @@
+{
+	"name": "Excel1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ABLB_azurementoringdatalakeda",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Excel",
+		"typeProperties": {
+			"sheetName": "sample_rate",
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "sample_rate.xlsx",
+				"folderPath": "movies",
+				"container": "raw"
+			},
+			"range": "A2:D100",
+			"firstRowAsHeader": false
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,32 @@
+{
+	"name": "CinemaTicketsTrigger",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Stopped",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "PL_master_pipeline_cinematickets",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2024-05-04T22:30:00",
+				"timeZone": "Georgian Standard Time",
+				"schedule": {
+					"minutes": [
+						36
+					],
+					"hours": [
+						2
+					]
+				}
+			}
+		}
+	}
+}

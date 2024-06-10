@@ -1,0 +1,19 @@
+{
+	"name": "LS_ABLB_azurementoringstorageda_online",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobStorage",
+		"typeProperties": {
+			"sasUri": "https://azurementoringstorageda.blob.core.windows.net/online",
+			"sasToken": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "LS_AKV",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "secret-azurementoringstorageda-online"
+			}
+		}
+	}
+}

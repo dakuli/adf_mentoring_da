@@ -1,0 +1,43 @@
+{
+	"name": "PL_DATA_movies_dbo_to_DataMart_dim",
+	"properties": {
+		"activities": [
+			{
+				"name": "ACT_MT_DF_populate_Dim",
+				"description": "populate DimOnlineService and DimMovie",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_movies_dbo_to_DM_dim",
+						"type": "DataFlowReference"
+					},
+					"integrationRuntime": {
+						"referenceName": "Azure-IR-M8",
+						"type": "IntegrationRuntimeReference"
+					},
+					"traceLevel": "None",
+					"cacheSinks": {
+						"firstRowOnly": true
+					}
+				}
+			}
+		],
+		"variables": {
+			"tmp": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-05-19T20:27:28Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

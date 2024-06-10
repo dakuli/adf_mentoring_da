@@ -1,0 +1,161 @@
+{
+	"name": "DF_movies_dbo_to_dim_part1",
+	"properties": {
+		"folder": {
+			"name": "archive"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_dbo_tMovies",
+						"type": "DatasetReference"
+					},
+					"name": "tMovies"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_dbo_tMovieStatus",
+						"type": "DatasetReference"
+					},
+					"name": "tMovieStatus"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_DM_DimMovie",
+						"type": "DatasetReference"
+					},
+					"name": "DimMovie"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_DM_DimMovie",
+						"type": "DatasetReference"
+					},
+					"name": "loadDimMovie"
+				}
+			],
+			"transformations": [
+				{
+					"name": "dboPreparationJoin"
+				},
+				{
+					"name": "addHashSource",
+					"description": "create Hash Column"
+				},
+				{
+					"name": "addHashTarget",
+					"description": "create Hash Column"
+				},
+				{
+					"name": "notExistsByHash",
+					"description": "Filtering rows which are not matching in undefined based on columns 'addHashSource@d_hash, addHashTarget@d_hash'"
+				},
+				{
+					"name": "Lookup"
+				},
+				{
+					"name": "addInsertUpdate",
+					"description": "Add new Insert and Update columns"
+				},
+				{
+					"name": "alterRow"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          MovieId as integer,",
+				"          MovieIdNK as integer,",
+				"          Budget as integer,",
+				"          HomepagePath as string,",
+				"          Title as string,",
+				"          OriginalTitle as string,",
+				"          ReleaseDate as date,",
+				"          Revenue as long,",
+				"          Runtime as integer,",
+				"          MovieStatusId as integer,",
+				"          AvgVote as decimal(3,1),",
+				"          CreatedDate as timestamp,",
+				"          ModifiedDate as timestamp,",
+				"          SrcFileName as string",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> tMovies",
+				"source(output(",
+				"          MovieStatusId as integer,",
+				"          MovieStatusName as string,",
+				"          CreatedDate as timestamp",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> tMovieStatus",
+				"source(output(",
+				"          MovieKey as integer,",
+				"          MovieIdNK as integer,",
+				"          Title as string,",
+				"          ReleaseDate as date,",
+				"          Runtime as integer,",
+				"          MovieStatus as string,",
+				"          CreatedDate as timestamp,",
+				"          ModifiedDate as timestamp",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> DimMovie",
+				"tMovies, tMovieStatus join(tMovies@MovieStatusId == tMovieStatus@MovieStatusId,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> dboPreparationJoin",
+				"dboPreparationJoin derive(d_hash = sha1(Title+toString(ReleaseDate)+toString(Runtime)+MovieStatusName)) ~> addHashSource",
+				"DimMovie derive(d_hash = sha1(Title+toString(ReleaseDate)+toString(Runtime)+MovieStatus)) ~> addHashTarget",
+				"addHashSource, addHashTarget exists(addHashSource@d_hash == addHashTarget@d_hash,",
+				"     negate:true,",
+				"     broadcast: 'auto')~> notExistsByHash",
+				"notExistsByHash, addHashTarget lookup(tMovies@MovieIdNK == DimMovie@MovieIdNK,",
+				"     multiple: true,",
+				"     broadcast: 'auto')~> Lookup",
+				"Lookup derive(d_insert_ts = iif(isNull(DimMovie@CreatedDate), currentTimestamp(), DimMovie@CreatedDate),",
+				"          d_update_ts = currentTimestamp()) ~> addInsertUpdate",
+				"addInsertUpdate alterRow(upsertIf(true())) ~> alterRow",
+				"alterRow sink(allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     input(",
+				"          MovieKey as integer,",
+				"          MovieIdNK as integer,",
+				"          Title as string,",
+				"          ReleaseDate as date,",
+				"          Runtime as integer,",
+				"          MovieStatus as string,",
+				"          CreatedDate as timestamp,",
+				"          ModifiedDate as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:false,",
+				"     upsertable:true,",
+				"     keys:['MovieIdNK'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          MovieIdNK = tMovies@MovieIdNK,",
+				"          Title = tMovies@Title,",
+				"          ReleaseDate = tMovies@ReleaseDate,",
+				"          Runtime = tMovies@Runtime,",
+				"          MovieStatus = MovieStatusName,",
+				"          CreatedDate = d_insert_ts,",
+				"          ModifiedDate = d_update_ts",
+				"     )) ~> loadDimMovie"
+			]
+		}
+	}
+}

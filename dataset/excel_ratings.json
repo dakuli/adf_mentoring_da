@@ -1,0 +1,35 @@
+{
+	"name": "excel_ratings",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ASQL_movies",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "userId",
+				"type": "nvarchar"
+			},
+			{
+				"name": "movieId",
+				"type": "nvarchar"
+			},
+			{
+				"name": "rating",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "timestamp",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "stg",
+			"table": "ratings_from_excel"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

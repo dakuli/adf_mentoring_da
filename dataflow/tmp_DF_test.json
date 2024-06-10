@@ -1,0 +1,119 @@
+{
+	"name": "tmp_DF_test",
+	"properties": {
+		"folder": {
+			"name": "tmp"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_dim_test1",
+						"type": "DatasetReference"
+					},
+					"name": "testSource"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_dim_test2",
+						"type": "DatasetReference"
+					},
+					"name": "testTarget"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DS_ASQL_dim_test2",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "alterRow1"
+				},
+				{
+					"name": "createHash"
+				},
+				{
+					"name": "exists"
+				},
+				{
+					"name": "setAttributes"
+				},
+				{
+					"name": "lookup1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          id as integer,",
+				"          name as string,",
+				"          country as string",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> testSource",
+				"source(output(",
+				"          id as integer,",
+				"          fullname as string,",
+				"          country as string,",
+				"          insert_ts as timestamp,",
+				"          update_ts as timestamp,",
+				"          dw_hash as string",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> testTarget",
+				"setAttributes alterRow(upsertIf(true())) ~> alterRow1",
+				"testSource derive(DWhash = sha1(name+country)) ~> createHash",
+				"createHash, testTarget exists(DWhash == dw_hash,",
+				"     negate:true,",
+				"     broadcast: 'auto')~> exists",
+				"lookup1 derive(new_insert_ts = iif(\r",
+				"    isNull(insert_ts),\r",
+				"    currentTimestamp(),\r",
+				"    insert_ts\r",
+				"),",
+				"          new_update_ts = currentTimestamp()) ~> setAttributes",
+				"exists, testTarget lookup(testSource@id == testTarget@id,",
+				"     multiple: true,",
+				"     broadcast: 'auto')~> lookup1",
+				"alterRow1 sink(allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     input(",
+				"          id as integer,",
+				"          fullname as string,",
+				"          country as string,",
+				"          insert_ts as timestamp,",
+				"          update_ts as timestamp,",
+				"          dw_hash as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:false,",
+				"     upsertable:true,",
+				"     keys:['id'],",
+				"     format: 'table',",
+				"     preSQLs:['set identity_insert [dbo].[DimMovie] off;'],",
+				"     postSQLs:['set identity_insert [dbo].[DimMovie] on;'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          id = testSource@id,",
+				"          fullname = name,",
+				"          country = testSource@country,",
+				"          insert_ts = new_insert_ts,",
+				"          update_ts = new_update_ts,",
+				"          dw_hash = DWhash",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

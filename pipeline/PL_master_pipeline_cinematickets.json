@@ -1,0 +1,49 @@
+{
+	"name": "PL_master_pipeline_cinematickets",
+	"properties": {
+		"activities": [
+			{
+				"name": "ACT_GEN_EPIPE_CinemaSourceToStg",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "PL_DATA_cinematickets_src_to_stg",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "ACT_GEN_EPIPE_CinemaStgToDbo",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ACT_GEN_EPIPE_CinemaSourceToStg",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "PL_DATA_cinematickets_stg_to_dbo",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2024-05-10T23:55:13Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

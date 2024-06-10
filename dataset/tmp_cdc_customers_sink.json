@@ -1,0 +1,39 @@
+{
+	"name": "tmp_cdc_customers_sink",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ABLB_azurementoringdatalakeda",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"triggerStart": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "tmp"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": {
+					"value": "@concat(formatDateTime(dataset().triggerStart,'yyyyMMddHHmmssfff'),'.csv')",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@concat('cdc_customers/incremental/',formatDateTime(dataset().triggerStart,'yyyy/MM/dd'))",
+					"type": "Expression"
+				},
+				"container": "raw"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

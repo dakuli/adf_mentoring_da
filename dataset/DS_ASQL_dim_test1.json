@@ -1,0 +1,34 @@
+{
+	"name": "DS_ASQL_dim_test1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ASQL_DataMart_adf",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "tmp"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "name",
+				"type": "text"
+			},
+			{
+				"name": "country",
+				"type": "text"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "test1"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

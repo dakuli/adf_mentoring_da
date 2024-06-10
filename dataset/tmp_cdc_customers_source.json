@@ -1,0 +1,68 @@
+{
+	"name": "tmp_cdc_customers_source",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ASQL_cinematickets_adf",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "tmp"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "__$start_lsn",
+				"type": "binary"
+			},
+			{
+				"name": "__$end_lsn",
+				"type": "binary"
+			},
+			{
+				"name": "__$seqval",
+				"type": "binary"
+			},
+			{
+				"name": "__$operation",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "__$update_mask",
+				"type": "varbinary"
+			},
+			{
+				"name": "customer_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "first_name",
+				"type": "varchar"
+			},
+			{
+				"name": "last_name",
+				"type": "varchar"
+			},
+			{
+				"name": "email",
+				"type": "varchar"
+			},
+			{
+				"name": "city",
+				"type": "varchar"
+			},
+			{
+				"name": "__$command_id",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"schema": "cdc",
+			"table": "tmp_customers_CT"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
