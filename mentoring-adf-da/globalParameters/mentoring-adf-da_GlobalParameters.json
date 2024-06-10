@@ -1,0 +1,6 @@
+{
+	"logicAppSendEmailUrl": {
+		"type": "string",
+		"value": "https://mentoring-key-vault-da.vault.azure.net/secrets/sectet-logic-app-send-email/d21586f0eaf349ffa10cc45a2d109fb5"
+	}
+}

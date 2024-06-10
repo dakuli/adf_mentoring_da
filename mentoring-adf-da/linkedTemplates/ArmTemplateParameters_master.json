@@ -1,0 +1,54 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "mentoring-adf-da"
+		},
+		"LS_ABLB_azurementoringauda_movies_connectionString": {
+			"value": ""
+		},
+		"LS_ASQL_DataMart_adf_connectionString": {
+			"value": ""
+		},
+		"LS_ASQL_cinematickets_adf_connectionString": {
+			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=EPGETBIW03F1\\MSSQLSERVER2022;Initial Catalog=CinemaTickets;User ID=adf;TrustServerCertificate=True"
+		},
+		"LS_ASQL_movies_connectionString": {
+			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=azure-mentoring-da.database.windows.net;Initial Catalog=movies;User ID=ms-admin"
+		},
+		"LS_ASQL_movies_adf_connectionString": {
+			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=azure-mentoring-da.database.windows.net;Initial Catalog=movies;User ID=adf"
+		},
+		"LS_ABLB_azurementoringdatalakeda_properties_typeProperties_serviceEndpoint": {
+			"value": "https://azurementoringdatalakeda.blob.core.windows.net/"
+		},
+		"LS_ABLB_azurementoringstorageda_movies_properties_typeProperties_sasUri_secretName": {
+			"value": "secret-azurementoringstorageda-movies"
+		},
+		"LS_ABLB_azurementoringstorageda_online_sasUri": {
+			"value": ""
+		},
+		"LS_ABLB_azurementoringstorageda_online_properties_typeProperties_sasToken_secretName": {
+			"value": "secret-azurementoringstorageda-online"
+		},
+		"LS_ABLB_azurementoringstorageda_tmp_sasUri": {
+			"value": ""
+		},
+		"LS_AKV_properties_typeProperties_baseUrl": {
+			"value": "https://mentoring-key-vault-da.vault.azure.net/"
+		},
+		"cdc_trigger_properties_pipeline_parameters_triggerStartTime": {
+			"value": "@formatDateTime(trigger().outputs.windowStartTime,'yyyy-MM-dd HH:mm:ss.fff')"
+		},
+		"cdc_trigger_properties_pipeline_parameters_triggerEndTime": {
+			"value": "@formatDateTime(trigger().outputs.windowEndTime,'yyyy-MM-dd HH:mm:ss.fff')"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}

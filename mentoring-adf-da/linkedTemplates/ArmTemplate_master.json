@@ -1,0 +1,216 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "mentoring-adf-da"
+		},
+		"LS_ABLB_azurementoringauda_movies_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'LS_ABLB_azurementoringauda_movies'"
+		},
+		"LS_ASQL_DataMart_adf_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'LS_ASQL_DataMart_adf'"
+		},
+		"LS_ASQL_cinematickets_adf_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'LS_ASQL_cinematickets_adf'",
+			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=EPGETBIW03F1\\MSSQLSERVER2022;Initial Catalog=CinemaTickets;User ID=adf;TrustServerCertificate=True"
+		},
+		"LS_ASQL_movies_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'LS_ASQL_movies'",
+			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=azure-mentoring-da.database.windows.net;Initial Catalog=movies;User ID=ms-admin"
+		},
+		"LS_ASQL_movies_adf_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'LS_ASQL_movies_adf'",
+			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=azure-mentoring-da.database.windows.net;Initial Catalog=movies;User ID=adf"
+		},
+		"LS_ABLB_azurementoringdatalakeda_properties_typeProperties_serviceEndpoint": {
+			"type": "string",
+			"defaultValue": "https://azurementoringdatalakeda.blob.core.windows.net/"
+		},
+		"LS_ABLB_azurementoringstorageda_movies_properties_typeProperties_sasUri_secretName": {
+			"type": "string",
+			"defaultValue": "secret-azurementoringstorageda-movies"
+		},
+		"LS_ABLB_azurementoringstorageda_online_sasUri": {
+			"type": "secureString",
+			"metadata": "Secure string for 'sasUri' of 'LS_ABLB_azurementoringstorageda_online'"
+		},
+		"LS_ABLB_azurementoringstorageda_online_properties_typeProperties_sasToken_secretName": {
+			"type": "string",
+			"defaultValue": "secret-azurementoringstorageda-online"
+		},
+		"LS_ABLB_azurementoringstorageda_tmp_sasUri": {
+			"type": "secureString",
+			"metadata": "Secure string for 'sasUri' of 'LS_ABLB_azurementoringstorageda_tmp'"
+		},
+		"LS_AKV_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://mentoring-key-vault-da.vault.azure.net/"
+		},
+		"cdc_trigger_properties_pipeline_parameters_triggerStartTime": {
+			"type": "string",
+			"defaultValue": "@formatDateTime(trigger().outputs.windowStartTime,'yyyy-MM-dd HH:mm:ss.fff')"
+		},
+		"cdc_trigger_properties_pipeline_parameters_triggerEndTime": {
+			"type": "string",
+			"defaultValue": "@formatDateTime(trigger().outputs.windowEndTime,'yyyy-MM-dd HH:mm:ss.fff')"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "mentoring-adf-da_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"LS_ABLB_azurementoringauda_movies_connectionString": {
+						"value": "[parameters('LS_ABLB_azurementoringauda_movies_connectionString')]"
+					},
+					"LS_ASQL_DataMart_adf_connectionString": {
+						"value": "[parameters('LS_ASQL_DataMart_adf_connectionString')]"
+					},
+					"LS_ABLB_azurementoringdatalakeda_properties_typeProperties_serviceEndpoint": {
+						"value": "[parameters('LS_ABLB_azurementoringdatalakeda_properties_typeProperties_serviceEndpoint')]"
+					},
+					"LS_ABLB_azurementoringstorageda_tmp_sasUri": {
+						"value": "[parameters('LS_ABLB_azurementoringstorageda_tmp_sasUri')]"
+					},
+					"LS_AKV_properties_typeProperties_baseUrl": {
+						"value": "[parameters('LS_AKV_properties_typeProperties_baseUrl')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "mentoring-adf-da_ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"LS_ASQL_cinematickets_adf_connectionString": {
+						"value": "[parameters('LS_ASQL_cinematickets_adf_connectionString')]"
+					},
+					"LS_ASQL_movies_connectionString": {
+						"value": "[parameters('LS_ASQL_movies_connectionString')]"
+					},
+					"LS_ASQL_movies_adf_connectionString": {
+						"value": "[parameters('LS_ASQL_movies_adf_connectionString')]"
+					},
+					"LS_ABLB_azurementoringstorageda_movies_properties_typeProperties_sasUri_secretName": {
+						"value": "[parameters('LS_ABLB_azurementoringstorageda_movies_properties_typeProperties_sasUri_secretName')]"
+					},
+					"LS_ABLB_azurementoringstorageda_online_sasUri": {
+						"value": "[parameters('LS_ABLB_azurementoringstorageda_online_sasUri')]"
+					},
+					"LS_ABLB_azurementoringstorageda_online_properties_typeProperties_sasToken_secretName": {
+						"value": "[parameters('LS_ABLB_azurementoringstorageda_online_properties_typeProperties_sasToken_secretName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'mentoring-adf-da_ArmTemplate_0')]"
+			]
+		},
+		{
+			"name": "mentoring-adf-da_ArmTemplate_2",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_2.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'mentoring-adf-da_ArmTemplate_1')]"
+			]
+		},
+		{
+			"name": "mentoring-adf-da_ArmTemplate_3",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_3.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'mentoring-adf-da_ArmTemplate_2')]"
+			]
+		},
+		{
+			"name": "mentoring-adf-da_ArmTemplate_4",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_4.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"cdc_trigger_properties_pipeline_parameters_triggerStartTime": {
+						"value": "[parameters('cdc_trigger_properties_pipeline_parameters_triggerStartTime')]"
+					},
+					"cdc_trigger_properties_pipeline_parameters_triggerEndTime": {
+						"value": "[parameters('cdc_trigger_properties_pipeline_parameters_triggerEndTime')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'mentoring-adf-da_ArmTemplate_3')]"
+			]
+		}
+	]
+}
