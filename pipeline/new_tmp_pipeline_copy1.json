@@ -1,0 +1,27 @@
+{
+	"name": "new_tmp_pipeline_copy1",
+	"properties": {
+		"activities": [
+			{
+				"name": "ACT_GEN_EPIPE_IngestToRaw",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "PL_DATA_movies_src_to_raw",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"folder": {
+			"name": "tmp"
+		},
+		"annotations": []
+	}
+}
